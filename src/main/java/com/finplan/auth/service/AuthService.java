@@ -3,6 +3,9 @@ package com.finplan.auth.service;
 import com.finplan.auth.model.*;
 import com.finplan.auth.repository.RefreshTokenRepository;
 import com.finplan.auth.repository.UsuarioRepository;
+import com.finplan.presupuesto.model.Categoria;
+import com.finplan.presupuesto.model.TipoCategoria;
+import com.finplan.presupuesto.repository.CategoriaRepository;
 import com.finplan.shared.exception.BusinessException;
 import com.finplan.shared.exception.ResourceNotFoundException;
 import com.finplan.shared.security.JwtUtil;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -32,7 +36,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authManager;
     private final UserDetailsService userDetailsService;
-
+    private final CategoriaRepository categoriaRepository;
     @Value("${app.jwt.refresh-token-expiration}")
     private long refreshTokenExpiration;
 
@@ -52,6 +56,7 @@ public class AuthService {
                 .build();
 
         usuarioRepository.save(usuario);
+        crearCategoriasDefault(usuario);
         return generarTokensYRespuesta(usuario, response);
     }
 
@@ -164,5 +169,27 @@ public class AuthService {
         cookie.setPath("/");
         cookie.setMaxAge(0);
         response.addCookie(cookie);
+    }
+    private void crearCategoriasDefault(Usuario usuario) {
+        List<String[]> defaults = List.of(
+                new String[]{"Salario", "INGRESO"},
+                new String[]{"Freelance", "INGRESO"},
+                new String[]{"Alimentación", "GASTO"},
+                new String[]{"Transporte", "GASTO"},
+                new String[]{"Vivienda", "GASTO"},
+                new String[]{"Salud", "GASTO"},
+                new String[]{"Entretenimiento", "GASTO"},
+                new String[]{"Educación", "GASTO"}
+        );
+        defaults.forEach(d ->
+                categoriaRepository.save(
+                        Categoria.builder()
+                                .usuario(usuario)
+                                .nombre(d[0])
+                                .tipo(TipoCategoria.valueOf(d[1]))
+                                .activa(true)
+                                .build()
+                )
+        );
     }
 }
