@@ -1,7 +1,9 @@
 # FinPlan Seguro — Documentación Técnica de la API
 
 > **Stack:** Spring Boot 4.0.4 · Java 21 · MySQL 8.0 · JWT (jjwt 0.12.7) · Flyway 11
-> **Última actualización:** Marzo 2026
+> **Última actualización:** Abril 2026
+> **Módulos implementados:** Auth, Presupuesto, Categorías, Transacciones, Alertas, Admin
+Pendientes: Reportes, Deudas
 
 ---
 
@@ -97,12 +99,12 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### 3.1 Auth
 
-**Base path:** `/api/auth`  
+**Base path:** `/api/auth` 
 **Autenticación requerida:** Solo en `/me`
 
 ---
 
-#### `POST /api/auth/registro` ✅ Implementado
+#### `POST /api/auth/registro`  Implementado
 
 Registra un nuevo usuario y retorna tokens de acceso.
 
@@ -246,7 +248,7 @@ Renueva el `accessToken` usando la cookie `refreshToken`.
 
 ---
 
-#### `POST /api/auth/logout` ✅ Implementado
+#### `POST /api/auth/logout`  Implementado
 
 Cierra sesión e invalida el refresh token.
 
@@ -270,7 +272,7 @@ Cierra sesión e invalida el refresh token.
 
 ---
 
-#### `GET /api/auth/me` ✅ Implementado
+#### `GET /api/auth/me`  Implementado
 
 Retorna el perfil del usuario autenticado.
 
@@ -306,14 +308,14 @@ Retorna el perfil del usuario autenticado.
 
 ### 3.2 Presupuesto
 
-**Base path:** `/api/presupuestos`  
-**Autenticación requerida:** ✅ Todos los endpoints  
+**Base path:** `/api/presupuestos` 
+**Autenticación requerida:** ✅ Todos los endpoints 
 
 > **Nota de tipos:** `anio` y `mes` son `Short` en Java y `SMALLINT` en MySQL.
 
 ---
 
-#### `POST /api/presupuestos` ✅ Implementado
+#### `POST /api/presupuestos`  Implementado
 
 Crea un presupuesto anual para el usuario autenticado.
 
@@ -366,7 +368,7 @@ Crea un presupuesto anual para el usuario autenticado.
 
 ---
 
-#### `GET /api/presupuestos/{anio}` ✅ Implementado
+#### `GET /api/presupuestos/{anio}`  Implementado
 
 Retorna el presupuesto de un año específico con todos sus detalles mensuales.
 
@@ -418,7 +420,7 @@ Retorna el presupuesto de un año específico con todos sus detalles mensuales.
 
 ### 3.3 Categorías
 
-**Base path:** `/api/categorias`  
+**Base path:** `/api/categorias` 
 **Autenticación requerida:** ✅ Todos los endpoints
 
 ---
@@ -598,13 +600,11 @@ Actualiza el monto planeado de un ítem mensual de presupuesto.
 
 ---
 
-## 4. Módulos Pendientes
-
----
-
-### 4.1 Transacciones ⏳ Pendiente
+### 4.1 Transacciones  implementado
 
 **Propósito:** Registrar ingresos y gastos reales del usuario, permitiendo comparar lo ejecutado vs lo planeado en el presupuesto mensual.
+**Base path:** `/api/transacciones` 
+**Autenticación requerida:** 
 
 **Entidades JPA involucradas:**
 - `Transaccion` (nueva)
@@ -659,9 +659,78 @@ CREATE TABLE transacciones (
 | `anio` | `Short` | Año                  |
 | `tipo` | `String`| `INGRESO` o `GASTO`  |
 
+**GET /api/transacciones/resumen
+
+Resumen por categoría
+
+DELETE /api/transacciones/{id}
+
+Eliminar transacción**
+
+---
+### 4.3 Alertas  implementado
+
+**Propósito:** Notificar al usuario cuando supera el presupuesto mensual en una categoría, o cuando se acerca una cuota por vencer.
+**Base path: /api/alertas**
+
+**Entidades JPA involucradas:**
+- `Alerta` (nueva)
+- `Usuario` (existente)
+
+**Script Flyway sugerido:** `V5__create_alertas.sql`
+
+```sql
+CREATE TABLE alertas (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id  BIGINT       NOT NULL,
+    tipo        VARCHAR(50)  NOT NULL COMMENT 'PRESUPUESTO_EXCEDIDO | CUOTA_PROXIMA',
+    mensaje     VARCHAR(500) NOT NULL,
+    leida       BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_alerta_usuario FOREIGN KEY (usuario_id)
+        REFERENCES usuarios(id) ON DELETE CASCADE,
+    INDEX idx_alerta_usuario (usuario_id, leida)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+**Endpoints propuestos:**
+
+| Método    | Ruta                       | Descripción                         |
+|-----------|----------------------------|-------------------------------------|
+| `GET`     | `/api/alertas`             | Listar alertas: `?activa=true`      |
+| `PATCH`   | `/api/alertas/{id}/leer`   | Marcar alerta como leída            |
+| `GET`     | `/api/alertas/contador`    | Cantidad de alertas no leídas       |
+
 ---
 
-### 4.2 Deudas y Pagos ⏳ Pendiente
+### 4.5 Admin  implementado
+** Base path: /api/admin
+Acceso: ADMIN **
+
+**Propósito:** Gestión de usuarios y monitoreo del sistema. Solo accesible con rol `ADMIN`.
+
+**Entidades JPA involucradas:**
+- `Usuario` (existente)
+- `LogSistema` (nueva, opcional)
+
+**Endpoints propuestos:**
+
+| Método    | Ruta                           | Descripción                         |
+|-----------|--------------------------------|-------------------------------------|
+| `GET`     | `/api/admin/usuarios`          | Listar todos los usuarios           |
+| `POST`    | `/api/admin/usuarios`          | Crear usuario con rol específico    |
+| `PUT`     | `/api/admin/usuarios/{id}`     | Actualizar datos de usuario         |
+| `PATCH`   | `/api/admin/usuarios/{id}`     | Activar / desactivar usuario        |
+| `GET`     | `/api/admin/logs`              | Ver logs del sistema                |
+| `GET`     | `/api/admin/sistema/info`      | Info del servidor (versión, uptime) |
+
+---
+
+## 4. Módulos Pendientes
+
+---
+
+### 4.2 Deudas y Pagos  Pendiente
 
 **Propósito:** Gestionar deudas a crédito (cuotas fijas), con seguimiento de pagos y calendario de vencimientos.
 
@@ -721,41 +790,22 @@ CREATE TABLE pagos_deuda (
 
 ---
 
-### 4.3 Alertas ⏳ Pendiente
-
-**Propósito:** Notificar al usuario cuando supera el presupuesto mensual en una categoría, o cuando se acerca una cuota por vencer.
-
-**Entidades JPA involucradas:**
-- `Alerta` (nueva)
-- `Usuario` (existente)
-
-**Script Flyway sugerido:** `V5__create_alertas.sql`
-
-```sql
-CREATE TABLE alertas (
-    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id  BIGINT       NOT NULL,
-    tipo        VARCHAR(50)  NOT NULL COMMENT 'PRESUPUESTO_EXCEDIDO | CUOTA_PROXIMA',
-    mensaje     VARCHAR(500) NOT NULL,
-    leida       BOOLEAN      NOT NULL DEFAULT FALSE,
-    created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_alerta_usuario FOREIGN KEY (usuario_id)
-        REFERENCES usuarios(id) ON DELETE CASCADE,
-    INDEX idx_alerta_usuario (usuario_id, leida)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-```
-
-**Endpoints propuestos:**
-
-| Método    | Ruta                       | Descripción                         |
-|-----------|----------------------------|-------------------------------------|
-| `GET`     | `/api/alertas`             | Listar alertas: `?activa=true`      |
-| `PATCH`   | `/api/alertas/{id}/leer`   | Marcar alerta como leída            |
-| `GET`     | `/api/alertas/contador`    | Cantidad de alertas no leídas       |
+###  **Deudas** (Prioridad 2)
+**Status:** Parcialmente estructurado
+- Entidades: Deuda, CuotaDeuda, PagoDeuda (PENDIENTES)
+- Servicios: DeudaService (PENDIENTE)
+- Endpoints:
+  - POST /api/deudas (crear con cuotas automáticas)
+  - GET /api/deudas (listar activas)
+  - GET /api/deudas/{id}/cuotas (ver cuotas)
+  - GET /api/deudas/calendario?mes=&anio= (calendario de pagos)
+  - POST /api/deudas/{id}/pagos (registrar pago)
+- Migraciones: V4__create_deudas.sql (existe pero NO APLICADA)
 
 ---
 
-### 4.4 Reportes ⏳ Pendiente
+
+### 4.4 Reportes  Pendiente
 
 **Propósito:** Generar comparativas entre lo planeado y lo ejecutado, y balances mensuales para análisis financiero.
 
@@ -793,27 +843,15 @@ CREATE TABLE alertas (
   }
 }
 ```
+### **Reportes** (Prioridad 1)
+**Status:** Vacío (requiere implementación)
+- DTOs: ComparativoResponse, BalanceMensualResponse (archivos creados)
+- Servicios: ReporteService, ReporteServiceImpl (NO REQUIERE TABLA NUEVA)
+- Controller: ReporteController
+- Endpoints:
+  - GET /api/reportes/comparativo?anio=&mes= (planeado vs ejecutado)
+  - GET /api/reportes/balance-mensual?anio=&mes= (ingresos - gastos)
 
----
-
-### 4.5 Admin ⏳ Pendiente
-
-**Propósito:** Gestión de usuarios y monitoreo del sistema. Solo accesible con rol `ADMIN`.
-
-**Entidades JPA involucradas:**
-- `Usuario` (existente)
-- `LogSistema` (nueva, opcional)
-
-**Endpoints propuestos:**
-
-| Método    | Ruta                           | Descripción                         |
-|-----------|--------------------------------|-------------------------------------|
-| `GET`     | `/api/admin/usuarios`          | Listar todos los usuarios           |
-| `POST`    | `/api/admin/usuarios`          | Crear usuario con rol específico    |
-| `PUT`     | `/api/admin/usuarios/{id}`     | Actualizar datos de usuario         |
-| `PATCH`   | `/api/admin/usuarios/{id}`     | Activar / desactivar usuario        |
-| `GET`     | `/api/admin/logs`              | Ver logs del sistema                |
-| `GET`     | `/api/admin/sistema/info`      | Info del servidor (versión, uptime) |
 
 ---
 
@@ -842,16 +880,11 @@ CREATE TABLE alertas (
 
 ---
 
-## 7. Orden de Implementación de Módulos Pendientes
-
-| Prioridad | Módulo          | Justificación                                          |
-|-----------|-----------------|--------------------------------------------------------|
-| 1️⃣       | Transacciones   | Núcleo del sistema — sin esto no hay datos reales      |
-| 2️⃣       | Reportes        | Depende de transacciones — valor inmediato al usuario  |
-| 3️⃣       | Deudas y Pagos  | Funcionalidad diferenciadora del producto              |
-| 4️⃣       | Alertas         | Requiere transacciones y deudas para generar alertas   |
-| 5️⃣       | Admin           | Último — solo necesario para gestión operativa         |
-
----
+## Estado Final
+Métrica	                Valor
+Módulos completados	    5 / 7
+Endpoints	             30+
+Seguridad	          JWT + Roles
+Swagger	               Activo
 
 *Generado para el equipo de desarrollo FinPlan Seguro · Spring Boot 4.0.4 · Java 21*

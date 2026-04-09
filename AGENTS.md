@@ -7,6 +7,20 @@ Este documento guía a agentes de IA para implementar el backend de FinPlan de f
 Para detalles de endpoints, revisar: `finplan-api-docs.md`.
 
 ---
+#Estado del Sistema
+# Módulos COMPLETADOS
+Auth
+Presupuesto
+Categorías
+Transacciones
+Alertas
+Admin
+
+---
+# Módulos PENDIENTES
+Reportes (PRIORIDAD ALTA — no requiere BD nueva)
+Deudas (PRIORIDAD MEDIA — requiere entidades y migraciones)
+---
 
 ## Arquitectura General
 
@@ -31,6 +45,15 @@ model/
     * Service → lógica de negocio
     * Repository → acceso a datos (JPA)
     * Model → entidades JPA
+
+---
+
+## Reglas Críticas (NO ROMPER)
+* NO modificar módulos existentes sin necesidad
+* NO cambiar endpoints existentes
+* NO cambiar estructura de paquetes
+* NO duplicar lógica
+* NO exponer entidades en responses
 
 ---
 
@@ -98,8 +121,9 @@ Reglas:
 ## DTOs (Obligatorio)
 
 * Nunca exponer entidades en responses
-* Usar DTOs para request/response
-* Validar con `@Valid`
+* Siempre usar DTOs
+* Mapear explícitamente Entity ↔ DTO
+* Validar con @Valid
 
 ---
 
@@ -158,11 +182,12 @@ Authorization: Bearer <token>
 Reglas:
 
 * Todos los endpoints requieren autenticación excepto `/auth/**`
-* `usuario_id` se obtiene del token, NUNCA del request
-* Usar `@PreAuthorize` si aplica
+* Usuario SIEMPRE se obtiene del token (@AuthenticationPrincipal)
+* x NUNCA usar usuario_id desde el request
+* Validar que los recursos pertenezcan al usuario
+* Usar @PreAuthorize para roles (ej: ADMIN)
 
 ---
-
 ## Base de Datos
 
 * Migraciones con Flyway:
@@ -194,38 +219,53 @@ http://localhost:8080/swagger-ui/index.html
 
 Reglas:
 
-* Todos los controllers deben aparecer en Swagger
+* Todos los endpoints deben aparecer en Swagger
+* Verificar después de implementar
+* Si no aparece → error en Controller o anotaciones
 * Usar anotaciones si es necesario:
 
     * `@Operation(summary = "...")`
     * `@Tag(name = "...")`
 * Verificar cada endpoint en Swagger después de implementarlo
-* Swagger es la validación rápida de endpoints
+* Swagger es la validación principal de endpoints.
 
 ---
 
 ## Flujo de Desarrollo (OBLIGATORIO)
 
-Para cada módulo:
+Para cualquier módulo nuevo:
 
 1. Revisar `finplan-api-docs.md`
-2. Crear script Flyway
+2. Crear script Flyway (si aplica)
 3. Crear Entity
 4. Crear Repository
 5. Crear Service (interfaz + implementación)
 6. Crear DTOs
 7. Crear Controller
-8. Probar endpoints en Swagger
+8. Validar seguridad (usuario autenticado)
+9. Verificar endpoints en Swagger
+10. Probar funcionamiento
 
 ---
+## Reglas Específicas del Proyecto
+* ApiResponse<T> obligatorio
+* DTOs obligatorios
+* @Transactional en servicios
+* @RequiredArgsConstructor en inyección
+* BigDecimal para dinero
+* Short para mes/año
 
-## Módulos Pendientes (Prioridad)
+## Prioridad Actual de Desarrollo
 
-1. Transacciones
-2. Reportes
-3. Deudas
-4. Alertas
-5. Admin
+Reportes
+* NO crear tablas nuevas
+* Solo consultas (JOIN + SUM)
+* Basado en Transacciones + Presupuesto
+
+Deudas
+* Requiere entidades
+* Requiere migraciones
+* Lógica más compleja (cuotas, pagos)
 
 ---
 
@@ -238,6 +278,15 @@ Para cada módulo:
 * Mantener consistencia con módulos existentes
 
 ---
+
+##Validación Final (ANTES DE TERMINAR)
+✔ Compila (mvn clean install)
+✔ Endpoints aparecen en Swagger
+✔ Seguridad correcta (usuario autenticado)
+✔ No rompe módulos existentes
+✔Seguir naming existente
+✔Respetar seguridad (usuario del token)
+✔ Respuestas usan ApiResponse
 
 ## Comandos
 

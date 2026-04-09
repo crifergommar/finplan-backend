@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.*;
 
 @Service
@@ -31,6 +33,11 @@ public class ReporteServiceImpl implements ReporteService {
     public ComparativoResponse obtenerComparativo(String email, Short anio, Short mes) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        // Si no se proporcionan mes/año, usar el actual
+        LocalDate hoy = LocalDate.now();
+        if (anio == null) anio = (short) hoy.getYear();
+        if (mes == null) mes = (short) hoy.getMonthValue();
 
         // Obtener todas las categorías activas del usuario
         List<Categoria> categorias = categoriaRepository.findByUsuarioIdAndActivaTrue(usuario.getId());
@@ -89,6 +96,11 @@ public class ReporteServiceImpl implements ReporteService {
     public BalanceMensualResponse obtenerBalanceMensual(String email, Short anio, Short mes) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        // Si no se proporcionan mes/año, usar el actual
+        LocalDate hoy = LocalDate.now();
+        if (anio == null) anio = (short) hoy.getYear();
+        if (mes == null) mes = (short) hoy.getMonthValue();
 
         // Obtener todas las transacciones del mes
         List<Categoria> categoriasIngresos = categoriaRepository.findByUsuarioIdAndActivaTrue(usuario.getId())

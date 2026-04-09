@@ -25,20 +25,20 @@ public class ReporteController {
     }
 
     @GetMapping("/comparativo")
-    @Operation(summary = "Obtener comparativo planeado vs ejecutado")
+    @Operation(summary = "Obtener comparativo planeado vs ejecutado por mes y año")
     public ResponseEntity<ApiResponse<ComparativoResponse>> obtenerComparativo(
-            @RequestParam Short anio,
-            @RequestParam Short mes,
+            @RequestParam(required = false) Short anio,
+            @RequestParam(required = false) Short mes,
             @AuthenticationPrincipal UserDetails user) {
         ComparativoResponse response = reporteService.obtenerComparativo(user.getUsername(), anio, mes);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @GetMapping("/balance-mensual")
-    @Operation(summary = "Obtener balance mensual (ingresos - gastos)")
+    @Operation(summary = "Obtener balance mensual: ingresos menos gastos")
     public ResponseEntity<ApiResponse<BalanceMensualResponse>> obtenerBalanceMensual(
-            @RequestParam Short anio,
-            @RequestParam Short mes,
+            @RequestParam(required = false) Short anio,
+            @RequestParam(required = false) Short mes,
             @AuthenticationPrincipal UserDetails user) {
         BalanceMensualResponse response = reporteService.obtenerBalanceMensual(user.getUsername(), anio, mes);
         return ResponseEntity.ok(ApiResponse.ok(response));
