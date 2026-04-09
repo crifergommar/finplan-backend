@@ -1,9 +1,9 @@
 # FinPlan Seguro — Documentación Técnica de la API
 
 > **Stack:** Spring Boot 4.0.4 · Java 21 · MySQL 8.0 · JWT (jjwt 0.12.7) · Flyway 11
-> **Última actualización:** Abril 2026
-> **Módulos implementados:** Auth, Presupuesto, Categorías, Transacciones, Alertas, Admin
-Pendientes: Reportes, Deudas
+> **Última actualización:** Abril 2026 (Actualización: 9 de Abril)
+> **Módulos implementados:** Auth, Presupuesto, Categorías, Transacciones, Alertas, Admin, Reportes, Deudas
+> **Estado:** ✅ COMPLETAMENTE IMPLEMENTADO (7/7 módulos)
 
 ---
 
@@ -726,11 +726,8 @@ Acceso: ADMIN **
 
 ---
 
-## 4. Módulos Pendientes
 
----
-
-### 4.2 Deudas y Pagos  Pendiente
+### 4.2 Deudas y Pagos  ✅ Implementado
 
 **Propósito:** Gestionar deudas a crédito (cuotas fijas), con seguimiento de pagos y calendario de vencimientos.
 
@@ -791,21 +788,25 @@ CREATE TABLE pagos_deuda (
 ---
 
 ###  **Deudas** (Prioridad 2)
-**Status:** Parcialmente estructurado
-- Entidades: Deuda, CuotaDeuda, PagoDeuda (PENDIENTES)
-- Servicios: DeudaService (PENDIENTE)
+**Status:** ✅ COMPLETAMENTE IMPLEMENTADO
+- Entidades: Deuda, CuotaDeuda, PagoDeuda ✅
+- Servicios: DeudaService, DeudaServiceImpl ✅
+- Controlador: DeudaController ✅
+- Repositorios: DeudaRepository, CuotaDeudaRepository, PagoDeudaRepository ✅
 - Endpoints:
-  - POST /api/deudas (crear con cuotas automáticas)
-  - GET /api/deudas (listar activas)
-  - GET /api/deudas/{id}/cuotas (ver cuotas)
-  - GET /api/deudas/calendario?mes=&anio= (calendario de pagos)
-  - POST /api/deudas/{id}/pagos (registrar pago)
-- Migraciones: V4__create_deudas.sql (existe pero NO APLICADA)
+  - POST /api/deudas (crear con cuotas automáticas) ✅
+  - GET /api/deudas (listar activas) ✅
+  - GET /api/deudas/{id} (obtener deuda) ✅
+  - GET /api/deudas/{id}/cuotas (ver cuotas) ✅
+  - GET /api/deudas/calendario?mes=&anio= (calendario de pagos) ✅
+  - POST /api/deudas/{id}/pagos (registrar pago) ✅
+  - GET /api/deudas/{id}/pagos (historial de pagos) ✅
+- Migraciones: V4__create_deudas.sql ✅
 
 ---
 
 
-### 4.4 Reportes  Pendiente
+### 4.4 Reportes  ✅ Implementado
 
 **Propósito:** Generar comparativas entre lo planeado y lo ejecutado, y balances mensuales para análisis financiero.
 
@@ -843,14 +844,16 @@ CREATE TABLE pagos_deuda (
   }
 }
 ```
+
 ### **Reportes** (Prioridad 1)
-**Status:** Vacío (requiere implementación)
-- DTOs: ComparativoResponse, BalanceMensualResponse (archivos creados)
-- Servicios: ReporteService, ReporteServiceImpl (NO REQUIERE TABLA NUEVA)
-- Controller: ReporteController
+**Status:** ✅ COMPLETAMENTE IMPLEMENTADO
+- DTOs: ComparativoResponse, BalanceMensualResponse ✅
+- Repositorio: ReporteRepository ✅
+- Servicios: ReporteService, ReporteServiceImpl ✅
+- Controlador: ReporteController ✅
 - Endpoints:
-  - GET /api/reportes/comparativo?anio=&mes= (planeado vs ejecutado)
-  - GET /api/reportes/balance-mensual?anio=&mes= (ingresos - gastos)
+  - GET /api/reportes/comparativo?anio=&mes= (planeado vs ejecutado) ✅
+  - GET /api/reportes/balance-mensual?anio=&mes= (ingresos - gastos) ✅
 
 
 ---
@@ -882,9 +885,10 @@ CREATE TABLE pagos_deuda (
 
 ## Estado Final
 Métrica	                Valor
-Módulos completados	    5 / 7
-Endpoints	             30+
+Módulos completados	    7 / 7 ✅
+Endpoints	             40+
 Seguridad	          JWT + Roles
 Swagger	               Activo
+Migraciones	          5 (Flyway)
 
-*Generado para el equipo de desarrollo FinPlan Seguro · Spring Boot 4.0.4 · Java 21*
+*Generado para el equipo de desarrollo FinPlan Seguro · Spring Boot 4.0.4 · Java 21 · Implementación Completada 9 de Abril 2026*
