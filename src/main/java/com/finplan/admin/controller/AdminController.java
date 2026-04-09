@@ -18,7 +18,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "http://localhost:4200")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Admin", description = "Administración del sistema (solo ADMIN)")
 @PreAuthorize("hasRole('ADMIN')")
