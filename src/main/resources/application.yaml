@@ -21,8 +21,12 @@ app:
 springdoc:
   api-docs:
     path: /api-docs
+    enabled: true
   swagger-ui:
     path: /swagger-ui.html
+    enabled: true
+  packages-to-scan: com.finplan
+  paths-to-match: /api/**
 
 ---
 spring:
@@ -46,7 +50,8 @@ server:
 logging:
   level:
     com.finplan: DEBUG
-    org.springframework.security: DEBUG
+    org.springframework: DEBUG
+    org.springframework.web.servlet.mvc.method: TRACE
 
 ---
 spring:

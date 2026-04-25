@@ -6,8 +6,9 @@ CREATE TABLE usuarios (
                           rol        VARCHAR(20)   NOT NULL DEFAULT 'USUARIO',
                           activo     BOOLEAN       NOT NULL DEFAULT TRUE,
                           created_at DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                          INDEX idx_usuarios_email (email)
+                          CHECK (rol IN ('USUARIO','ADMIN'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 CREATE TABLE refresh_tokens (
                                 id               BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -15,7 +16,9 @@ CREATE TABLE refresh_tokens (
                                 usuario_id       BIGINT       NOT NULL,
                                 fecha_expiracion DATETIME     NOT NULL,
                                 revocado         BOOLEAN      NOT NULL DEFAULT FALSE,
+
                                 CONSTRAINT fk_rt_usuario FOREIGN KEY (usuario_id)
                                     REFERENCES usuarios(id) ON DELETE CASCADE,
-                                INDEX idx_rt_token (token)
+
+                                INDEX idx_rt_usuario (usuario_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
