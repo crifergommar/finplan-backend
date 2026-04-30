@@ -31,4 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+<<<<<<< HEAD
 backup_finplan.sql
+=======
+>>>>>>> bd78ee74359ad4b0645ecb60b0baf43fb83d42f9
