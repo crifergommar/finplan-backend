@@ -1,6 +1,24 @@
 package com.finplan.auth.service;
 
-import com.finplan.auth.model.*;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.finplan.auth.model.AuthResponse;
+import com.finplan.auth.model.LoginRequest;
+import com.finplan.auth.model.RefreshToken;
+import com.finplan.auth.model.RegistroRequest;
+import com.finplan.auth.model.Rol;
+import com.finplan.auth.model.Usuario;
+import com.finplan.auth.model.UsuarioPerfilResponse;
 import com.finplan.auth.repository.RefreshTokenRepository;
 import com.finplan.auth.repository.UsuarioRepository;
 import com.finplan.presupuesto.model.Categoria;
@@ -9,21 +27,10 @@ import com.finplan.presupuesto.repository.CategoriaRepository;
 import com.finplan.shared.exception.BusinessException;
 import com.finplan.shared.exception.ResourceNotFoundException;
 import com.finplan.shared.security.JwtUtil;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -70,6 +77,12 @@ public class AuthService {
                 .findByEmail(request.getEmail())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Usuario no encontrado"));
+
+        try {
+            asegurarCategoriaOtros(usuario);
+        } catch (Exception e) {
+            // No interrumpir el login si falla la inicialización de categoría
+        }
 
         return generarTokensYRespuesta(usuario, response);
     }
@@ -170,6 +183,22 @@ public class AuthService {
         cookie.setMaxAge(0);
         response.addCookie(cookie);
     }
+    private void asegurarCategoriaOtros(Usuario usuario) {
+        boolean existe = categoriaRepository
+                .existsByNombreAndTipoAndUsuarioId("Otros", TipoCategoria.GASTO, usuario.getId());
+
+        if (!existe) {
+            categoriaRepository.save(
+                    Categoria.builder()
+                            .usuario(usuario)
+                            .nombre("Otros")
+                            .tipo(TipoCategoria.GASTO)
+                            .activa(true)
+                            .build()
+            );
+        }
+    }
+
     private void crearCategoriasDefault(Usuario usuario) {
         List<String[]> defaults = List.of(
                 new String[]{"Salario", "INGRESO"},

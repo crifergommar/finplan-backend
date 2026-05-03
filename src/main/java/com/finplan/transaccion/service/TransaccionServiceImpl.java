@@ -148,6 +148,20 @@ public class TransaccionServiceImpl implements TransaccionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<TransaccionResponse> listarPorMes(String email, int anio, int mes) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        List<Transaccion> transacciones = transaccionRepository
+                .findByUsuarioAndMesAndAnio(usuario, (short) mes, (short) anio);
+
+        return transacciones.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void eliminar(Long id, String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));

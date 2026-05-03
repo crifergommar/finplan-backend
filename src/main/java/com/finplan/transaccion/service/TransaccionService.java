@@ -12,6 +12,8 @@ public interface TransaccionService {
 
     List<TransaccionResponse> listar(String email, Short mes, Short anio, String tipo);
 
+    List<TransaccionResponse> listarPorMes(String email, int anio, int mes);
+
     ResumenTransaccionesResponse obtenerResumen(String email, Short mes, Short anio);
 
     void eliminar(Long id, String email);
