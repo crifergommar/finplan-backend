@@ -34,7 +34,7 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:3306/finplan_dev?createDatabaseIfNotExist=true...
+    url: jdbc:mysql://${DB_HOST:localhost}:3306/finplan_dev?createDatabaseIfNotExist=true
     username: ${DB_USER:root}
     password: ${DB_PASS:root1234}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -49,6 +49,6 @@ server:
 
 logging:
   level:
-    com.finplan: DEBUG
-    org.springframework: DEBUG
+    com.finplan: INFO
+    org.springframework: INFO
     org.springframework.web.servlet.mvc.method: TRACE
