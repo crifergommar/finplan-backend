@@ -6,12 +6,11 @@ import com.finplan.shared.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -32,6 +31,16 @@ public class PresupuestoController {
         return ResponseEntity.status(201).body(
                 ApiResponse.created(
                         presupuestoService.crearPresupuesto(
+                                request, user.getUsername())));
+    }
+
+    @PostMapping("/presupuestos/mensual")
+    public ResponseEntity<ApiResponse<PresupuestoResponse.MensualResponse>> crearMensual(
+            @Valid @RequestBody CrearMensualRequest request,
+            @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.status(201).body(
+                ApiResponse.created(
+                        presupuestoService.crearMensual(
                                 request, user.getUsername())));
     }
 

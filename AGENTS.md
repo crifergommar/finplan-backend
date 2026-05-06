@@ -7,19 +7,25 @@ Este documento guía a agentes de IA para implementar el backend de FinPlan de f
 Para detalles de endpoints, revisar: `finplan-api-docs.md`.
 
 ---
-#Estado del Sistema
-# Módulos COMPLETADOS
-Auth
-Presupuesto
-Categorías
-Transacciones
-Alertas
-Admin
+# Estado del Sistema
 
----
-# Módulos PENDIENTES
-Reportes (PRIORIDAD ALTA — no requiere BD nueva)
-Deudas (PRIORIDAD MEDIA — requiere entidades y migraciones)
+## Módulos COMPLETADOS
+| Módulo         | Notas                                                      |
+|----------------|------------------------------------------------------------|
+| Auth           | JWT, registro, login                                       |
+| Presupuesto    | CRUD, asociado a usuario autenticado                       |
+| Categorías     | Integradas en transacciones                                |
+| Transacciones  | CRUD, filtros por fecha/categoría                          |
+| Alertas        | Notificaciones automáticas, V5 migración                   |
+| Admin          | Gestión de usuarios, `@PreAuthorize(ADMIN)`                |
+| Reportes       | Balance mensual, comparativo; JOIN+SUM sobre transacciones |
+| Deudas         | Entidades Deuda/CuotaDeuda/PagoDeuda, V4 migración         |
+| Export         | ExportController + ExportService (sin entidad propia)      |
+| Proyecciones   | Entidad Proyeccion, EstadoProyeccion, V6 migración, confirmar crea transacción real |
+
+## Módulos PENDIENTES
+> Ninguno — todos los módulos planificados están implementados.
+
 ---
 
 ## Arquitectura General
@@ -27,7 +33,7 @@ Deudas (PRIORIDAD MEDIA — requiere entidades y migraciones)
 * Estructura modular por dominio:
 
 ```
-com.finplan.{auth,presupuesto,transaccion,deuda,alerta,reporte,admin}
+com.finplan.{auth,presupuesto,transaccion,deuda,alerta,reporte,admin,export,proyeccion}
 ```
 
 Cada módulo contiene:
